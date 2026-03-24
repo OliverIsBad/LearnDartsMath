@@ -1,0 +1,72 @@
+# =========================
+# Build / Output
+# =========================
+bin/
+obj/
+out/
+build/
+
+# =========================
+# User / IDE files
+# =========================
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# VS Code
+.vscode/
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+appsettings.Development.json
+secrets.json
+
+# =========================
+# EF Core
+# =========================
+# (Migrations behalten! NICHT ignorieren)
+
+# =========================
+# Node (falls später Frontend)
+# =========================
+node_modules/
+dist/
+build/
+
+# =========================
+# Docker
+# =========================
+docker-compose.override.yml
+
+# =========================
+# Coverage / Testing
+# =========================
+coverage/
+*.coverage
+*.coveragexml
+TestResults/
+
+# =========================
+# NuGet
+# =========================
+*.nupkg
+.nuget/packages/
