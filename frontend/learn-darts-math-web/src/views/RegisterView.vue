@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { apiFetch } from '@/services/api'
 
 type AuthResponse = {
@@ -8,6 +9,8 @@ type AuthResponse = {
   email: string
   displayName: string
 }
+
+const router = useRouter()
 
 const username = ref('')
 const email = ref('')
@@ -33,6 +36,7 @@ async function register() {
 
     localStorage.setItem('token', result.token)
     success.value = 'Registered successfully!'
+    router.push('/dashboard')
   } catch (err: unknown) {
     error.value = err instanceof Error ? err.message : 'Unknown error'
   }

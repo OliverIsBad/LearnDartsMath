@@ -1,3 +1,4 @@
+namespace LearnDartsMath.Api.DTOs;
 public class ThrowResultDto
 {
     public int DartNumber { get; set; }

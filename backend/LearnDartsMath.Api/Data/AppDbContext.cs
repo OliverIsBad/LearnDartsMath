@@ -12,7 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<User> Users => Set<User>();
     public DbSet<PlayerProfile> PlayerProfiles => Set<PlayerProfile>();
     public DbSet<TrainingSession> TrainingSessions => Set<TrainingSession>();
-    public DbSet<ThrowEntry> ThrowEntries => Set<ThrowEntry>();
+    public DbSet<TurnEntry> TurnEntries => Set<TurnEntry>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,9 +62,9 @@ public class AppDbContext : DbContext
             .HasForeignKey(t => t.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<ThrowEntry>()
+        modelBuilder.Entity<TurnEntry>()
             .HasOne(te => te.TrainingSession)
-            .WithMany(ts => ts.ThrowEntries)
+            .WithMany(ts => ts.TurnEntries)
             .HasForeignKey(te => te.TrainingSessionId)
             .OnDelete(DeleteBehavior.Cascade);
     }
