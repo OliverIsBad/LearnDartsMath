@@ -7,9 +7,12 @@ public class TrainingSession
     public int UserId { get; set; }
     public User User { get; set; } = null!;
 
-    public DateTime StartetAt { get; set; } = DateTime.UtcNow;
+    public DateTime StartedAt { get; set; } = DateTime.UtcNow;
     public string Mode { get; set; } = string.Empty;
 
-    public ICollection<ThrowEntry> ThrowEntries { get; set; } = new List<ThrowEntry>();
+    public int StartScore { get; set; }
+    public int CurrentScore { get; set; }
+    public bool IsFinished { get; set; }
 
+    public ICollection<ThrowEntry> ThrowEntries { get; set; } = new List<ThrowEntry>();
 }
