@@ -8,6 +8,7 @@
         <game-screen
             v-else="gameStarted === true"
             :current-score="currentScore"
+            @update:current-score="currentScore = $event"
             @reset="resetGame" 
         />
 

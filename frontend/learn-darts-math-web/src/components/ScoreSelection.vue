@@ -26,13 +26,13 @@
         <button @click="$emit('update:selectedScore', 25)" class="numberButton">25</button>
 
         <button @click="$emit('update:selectedModifier', 'DOUBLE')" class="modifierButton">D</button>
-        <button @click="$emit('update:selectedModifier', 'TRIPPLE')" class="modifierButton">T</button>
+        <button @click="$emit('update:selectedModifier', 'TRIPLE')" class="modifierButton">T</button>
     </div>
 </template>
 
 <script setup lang="ts">
 
-type Modifier = 'DOUBLE' | 'TRIPPLE'
+type Modifier = 'DOUBLE' | 'TRIPLE'
 
 defineProps<{
     selectedScore : number
