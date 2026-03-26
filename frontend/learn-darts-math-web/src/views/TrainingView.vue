@@ -1,15 +1,9 @@
 <template>
     <main class="page">
-        <div v-if="gameStarted === false" class="setup">
-            <h1> Settings </h1>
-
-            <label> 
-                Startscore:
-                <input v-model.number="startScore" type="number" />
-            </label>
-
-            <button @click="startGame">Start Game</button>
-        </div>
+        <game-setup-screen 
+            v-if="gameStarted === false" 
+            :start-score="startScore"
+            @start="startGame"/>
 
         <game-screen
             v-else="gameStarted === true"
@@ -23,6 +17,7 @@
 <script setup lang = "ts">
 
 import GameScreen from '@/components/GameScreen.vue'
+import GameSetupScreen from '@/components/GameSetupScreen.vue'
 
 import { ref } from 'vue'
 
