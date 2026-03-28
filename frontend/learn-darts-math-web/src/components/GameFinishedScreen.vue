@@ -53,7 +53,6 @@ const emit = defineEmits<{
 <style scoped>
 .finished-screen {
     width: 100%;
-    padding: 3rem 2rem;
 }
 
 .finished-layout {
@@ -83,7 +82,7 @@ const emit = defineEmits<{
 
 .intro h1 {
     margin: 0;
-    font-size: clamp(3rem, 6vw, 5.5rem);
+    font-size: clamp(2rem, 4w, 3.5rem);
     line-height: 0.95;
     font-weight: 700;
     color: #f2f2f2;
@@ -115,7 +114,7 @@ const emit = defineEmits<{
 }
 
 .main-stat-value {
-    font-size: clamp(5rem, 10vw, 8rem);
+    font-size: clamp(3rem, 6vw, 4.5rem);
     line-height: 0.9;
     font-weight: 700;
     color: var(--primary-color);
