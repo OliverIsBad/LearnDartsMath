@@ -1,5 +1,6 @@
 <template>
     <main class="page">
+        <p>{{ isGameFinished }}</p>
         <game-setup-screen 
             v-if="gameStarted === false" 
             :start-score="startScore"
@@ -8,6 +9,9 @@
         <game-screen
             v-else="gameStarted === true"
             :current-score="currentScore"
+            :is-game-finished="isGameFinished"
+            @update:current-score="currentScore = $event"
+            @update:is-game-finished="isGameFinished = $event"
             @reset="resetGame" 
         />
 
@@ -25,9 +29,12 @@ const gameStarted = ref<boolean>(false)
 const startScore = ref<number>(501)
 const currentScore = ref<number>(501)
 
+const isGameFinished = ref<boolean>(false)
+
 function startGame() : void {
     currentScore.value = startScore.value
     gameStarted.value = true
+    isGameFinished.value = false
 }
 
 function resetGame(): void {
