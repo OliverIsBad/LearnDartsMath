@@ -1,13 +1,18 @@
 <template>
     <main class="page">
-        <p>{{ isGameFinished }}</p>
-        <game-setup-screen 
-            v-if="gameStarted === false" 
-            :start-score="startScore"
-            @start="startGame"/>
+        
+        <GameFinishedScreen
+            v-if="isGameFinished"
+        />
 
-        <game-screen
-            v-else="gameStarted === true"
+        <GameSetupScreen 
+            v-else-if="!gameStarted" 
+            :start-score="startScore"
+            @start="startGame"
+        />
+
+        <GameScreen
+            v-else
             :current-score="currentScore"
             :is-game-finished="isGameFinished"
             @update:current-score="currentScore = $event"
@@ -18,29 +23,28 @@
     </main>
 </template>
 
-<script setup lang = "ts">
-
+<script setup lang="ts">
+import GameFinishedScreen from '@/components/GameFinishedScreen.vue'
 import GameScreen from '@/components/GameScreen.vue'
 import GameSetupScreen from '@/components/GameSetupScreen.vue'
-
 import { ref } from 'vue'
 
-const gameStarted = ref<boolean>(false)
-const startScore = ref<number>(501)
-const currentScore = ref<number>(501)
+const gameStarted = ref(false)
+const startScore = ref(501)
+const currentScore = ref(501)
+const isGameFinished = ref(false)
 
-const isGameFinished = ref<boolean>(false)
-
-function startGame() : void {
+function startGame(): void {
     currentScore.value = startScore.value
     gameStarted.value = true
     isGameFinished.value = false
 }
 
 function resetGame(): void {
-  gameStarted.value = false
-  startScore.value = 501
-  currentScore.value = 501
+    gameStarted.value = false
+    startScore.value = 501
+    currentScore.value = 501
+    isGameFinished.value = false
 }
 </script>
 

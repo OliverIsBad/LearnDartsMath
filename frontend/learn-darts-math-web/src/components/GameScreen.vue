@@ -9,7 +9,7 @@
             @update:selected-modifier="selectedModifier = $event"
         />
 
-        <button @click="$emit('reset')">Back</button>
+        <button @click="emit('reset')">Back</button>
     </div>
 </template>
 
@@ -45,14 +45,14 @@ function onScoreSelected(score: number) {
     const remainingScore = props.currentScore - thrownScore
     const isDouble = selectedModifier.value === 'DOUBLE'
 
-    if (isBusted(remainingScore, isDouble)) {
+    if (remainingScore === 0 && isDouble) {
+        emit('update:currentScore', 0)
+        emit('update:isGameFinished', true)
         resetSelection()
         return
     }
 
-    if (remainingScore === 0 && isDouble) {
-        emit('update:currentScore', 0)
-        emit('update:isGameFinished', true)
+    if (isBusted(remainingScore, isDouble)) {
         resetSelection()
         return
     }
