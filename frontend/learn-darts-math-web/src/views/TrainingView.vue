@@ -1,46 +1,55 @@
 <template>
     <main class="page">
-        <p>{{ isGameFinished }}</p>
-        <game-setup-screen 
-            v-if="gameStarted === false" 
-            :start-score="startScore"
-            @start="startGame"/>
 
-        <game-screen
-            v-else="gameStarted === true"
+        <GameFinishedScreen
+            v-if="isGameFinished"
+            :thrown-darts="dartsThrown"
+        />
+
+        <GameSetupScreen 
+            v-else-if="!gameStarted" 
+            :start-score="startScore"
+            @start="startGame"
+        />
+
+        <GameScreen
+            v-else
             :current-score="currentScore"
             :is-game-finished="isGameFinished"
+            :darts-thrown="dartsThrown"
             @update:current-score="currentScore = $event"
             @update:is-game-finished="isGameFinished = $event"
+            @update:darts-thrown="dartsThrown= $event"
             @reset="resetGame" 
         />
 
     </main>
 </template>
 
-<script setup lang = "ts">
-
+<script setup lang="ts">
+import GameFinishedScreen from '@/components/GameFinishedScreen.vue'
 import GameScreen from '@/components/GameScreen.vue'
 import GameSetupScreen from '@/components/GameSetupScreen.vue'
-
 import { ref } from 'vue'
 
-const gameStarted = ref<boolean>(false)
-const startScore = ref<number>(501)
-const currentScore = ref<number>(501)
+const gameStarted = ref(false)
+const startScore = ref(501)
+const currentScore = ref(501)
+const isGameFinished = ref(false)
 
-const isGameFinished = ref<boolean>(false)
+const dartsThrown = ref(0)
 
-function startGame() : void {
+function startGame(): void {
     currentScore.value = startScore.value
     gameStarted.value = true
     isGameFinished.value = false
 }
 
 function resetGame(): void {
-  gameStarted.value = false
-  startScore.value = 501
-  currentScore.value = 501
+    gameStarted.value = false
+    startScore.value = 501
+    currentScore.value = 501
+    isGameFinished.value = false
 }
 </script>
 
@@ -55,8 +64,6 @@ function resetGame(): void {
     margin-top: 15vh;
     margin-left: 30vw;
     margin-right: 30vw;
-    border: 1px solid white;
-    border-radius: 32px;
 }
 
 .setup{
@@ -74,12 +81,12 @@ button {
   background-color: #42b883;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
 }
 
 button:hover {
-  opacity: 0.9;
+  opacity: 0.5;
 }
 
 </style>

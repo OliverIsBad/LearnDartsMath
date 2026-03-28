@@ -10,13 +10,16 @@
 <style scoped>
 .container {
   padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .button {
   display: inline-block;
   margin-top: 20px;
   padding: 12px 18px;
-  background: #2d6cdf;
+  background: var(--primary-color);
   color: white;
   border-radius: 8px;
   text-decoration: none;

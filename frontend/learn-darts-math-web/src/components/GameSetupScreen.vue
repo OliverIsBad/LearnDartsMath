@@ -48,7 +48,7 @@ defineEmits<{
     padding: 0.75rem 1rem;
     font-size: 1rem;
     border: 1px solid #444;
-    border-radius: 10px;
+    border-radius: 4px;
     background-color: #1e1e1e;
     color: white;
     outline: none;
