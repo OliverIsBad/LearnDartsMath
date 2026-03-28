@@ -176,7 +176,6 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
 }
 
 a {
