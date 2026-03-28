@@ -1,58 +1,158 @@
-
 <template>
-    <div class="grid">
-        <button @click="$emit('update:selectedScore', 1)" class="numberButton">1</button>
-        <button @click="$emit('update:selectedScore', 2)" class="numberButton">2</button>
-        <button @click="$emit('update:selectedScore', 3)" class="numberButton">3</button>
-        <button @click="$emit('update:selectedScore', 4)" class="numberButton">4</button>
-        <button @click="$emit('update:selectedScore', 5)" class="numberButton">5</button>
-        <button @click="$emit('update:selectedScore', 6)" class="numberButton">6</button>
-        <button @click="$emit('update:selectedScore', 7)" class="numberButton">7</button>
-        <button @click="$emit('update:selectedScore', 8)" class="numberButton">8</button>
-        <button @click="$emit('update:selectedScore', 9)" class="numberButton">9</button>
-        <button @click="$emit('update:selectedScore', 10)" class="numberButton">10</button>
-        <button @click="$emit('update:selectedScore', 11)" class="numberButton">11</button>
-        <button @click="$emit('update:selectedScore', 12)" class="numberButton">12</button>
-        <button @click="$emit('update:selectedScore', 13)" class="numberButton">13</button>
-        <button @click="$emit('update:selectedScore', 14)" class="numberButton">14</button>
-        <button @click="$emit('update:selectedScore', 15)" class="numberButton">15</button>
-        <button @click="$emit('update:selectedScore', 16)" class="numberButton">16</button>
-        <button @click="$emit('update:selectedScore', 17)" class="numberButton">17</button>
-        <button @click="$emit('update:selectedScore', 18)" class="numberButton">18</button>
-        <button @click="$emit('update:selectedScore', 19)" class="numberButton">19</button>
-        <button @click="$emit('update:selectedScore', 20)" class="numberButton">20</button>
+    <div class="score-selection">
+        <div class="score-grid">
+            <button
+                v-for="score in scores"
+                :key="score"
+                @click="$emit('update:selectedScore', score)"
+                class="score-button"
+                :class="{ active: selectedScore === score }"
+            >
+                {{ score }}
+            </button>
 
+            <button
+                @click="$emit('update:selectedScore', 25)"
+                class="score-button bull"
+                :class="{ active: selectedScore === 25 }"
+            >
+                25
+            </button>
+        </div>
 
-        <button @click="$emit('update:selectedScore', 25)" class="numberButton">25</button>
+        <div class="modifier-row">
+            <button
+                @click="$emit('update:selectedModifier', 'DOUBLE')"
+                class="modifier-button"
+                :class="{ active: selectedModifier === 'DOUBLE' }"
+            >
+                Double
+            </button>
 
-        <button @click="$emit('update:selectedModifier', 'DOUBLE')" class="modifierButton">D</button>
-        <button @click="$emit('update:selectedModifier', 'TRIPLE')" class="modifierButton">T</button>
+            <button
+                @click="$emit('update:selectedModifier', 'TRIPLE')"
+                class="modifier-button"
+                :class="{ active: selectedModifier === 'TRIPLE' }"
+            >
+                Triple
+            </button>
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
-
 type Modifier = 'DOUBLE' | 'TRIPLE'
 
 defineProps<{
-    selectedScore : number
-    selectedModifier? : Modifier
+    selectedScore: number
+    selectedModifier?: Modifier
 }>()
 
 defineEmits<{
-    (e: 'update:selectedScore', value: number) : void
-    (e: 'update:selectedModifier', value: Modifier) : void
+    (e: 'update:selectedScore', value: number): void
+    (e: 'update:selectedModifier', value: Modifier): void
 }>()
+
+const scores = Array.from({ length: 20 }, (_, i) => i + 1)
 </script>
 
 <style scoped>
-    .modifierButton
-    {
-        background-color: rgb(228, 71, 71);
+.score-selection {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.score-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.75rem;
+}
+
+.score-button {
+    height: 62px;
+    border: 1px solid #2f2f2f;
+    border-radius: 16px;
+    background: #181818;
+    color: #f3f3f3;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.score-button:hover {
+    background: #202020;
+    border-color: #4a4a4a;
+}
+
+.score-button:active {
+    transform: scale(0.98);
+}
+
+.score-button.active {
+    background: #f3f3f3;
+    color: #111;
+    border-color: #f3f3f3;
+}
+
+.score-button.bull {
+    font-weight: 700;
+}
+
+.modifier-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+}
+
+.modifier-button {
+    height: 56px;
+    border: 1px solid #3a3a3a;
+    border-radius: 16px;
+    background: transparent;
+    color: #d8d8d8;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.modifier-button:hover {
+    background: #1d1d1d;
+    border-color: #5a5a5a;
+}
+
+.modifier-button:active {
+    transform: scale(0.98);
+}
+
+.modifier-button.active {
+    background: #ff9a1f;
+    border-color: #ff6f00;
+    color: white;
+}
+
+@media (max-width: 700px) {
+    .score-grid {
+        grid-template-columns: repeat(4, 1fr);
     }
-    .grid {
-        display: grid;
-        grid-template-columns: repeat( 6, 1fr);
-        gap: 16px;
+}
+
+@media (max-width: 520px) {
+    .score-grid {
+        grid-template-columns: repeat(3, 1fr);
     }
+
+    .score-button {
+        height: 56px;
+    }
+
+    .modifier-button {
+        height: 52px;
+    }
+}
 </style>
