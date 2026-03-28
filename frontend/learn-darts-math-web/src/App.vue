@@ -11,7 +11,14 @@
         <div class="profile-menu-wrapper">
           <button class="profile-button" @click="toggleMenu">
             <div class="avatar">
-              <span>O</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                class="profile-icon"
+                fill="currentColor"
+              >
+                <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z" />
+              </svg>
             </div>
           </button>
 
@@ -122,11 +129,17 @@ body {
   padding: 0;
 }
 
+.profile-icon {
+  width: 22px;
+  height: 22px;
+  color: white;
+}
+
 .avatar {
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: #42b883;
+  background: var(--primary-color);
   display: flex;
   align-items: center;
   justify-content: center;
