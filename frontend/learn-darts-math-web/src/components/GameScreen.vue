@@ -1,289 +1,338 @@
 <template>
-    <section class="game-screen">
-        <div class="game-layout">
-            <div class="top-row">
-                <div class="score-block">
-                    <p class="overline">current score</p>
-                    <h1>{{ currentScore }}</h1>
-                    <p class="description">
-                        Select a segment and an optional modifier to continue the leg.
-                    </p>
-                </div>
-
-                <div class="side-panel">
-                    <div class="info-item">
-                        <span class="info-label">mode</span>
-                        <span class="info-value">x01</span>
-                    </div>
-
-                    <div class="info-item">
-                        <span class="info-label">finish rule</span>
-                        <span class="info-value">double out</span>
-                    </div>
-
-                    <div class="info-item">
-                        <span class="info-label">darts thrown</span>
-                        <span class="info-value accent">{{ dartsTrownCounter }}</span>
-                    </div>
-
-                    <div class="info-item">
-                        <span class="info-label">selected</span>
-                        <span class="info-value">
-                            {{ selectedModifier ? selectedModifier + " " : "" }}{{ selectedScore || "-" }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="selection-section">
-                <ScoreSelection 
-                    :selected-score="selectedScore"
-                    :selected-modifier="selectedModifier"
-                    @update:selected-score="onScoreSelected"
-                    @update:selected-modifier="selectedModifier = $event"
-                />
-            </div>
-
-            <div class="actions">
-                <button class="secondary-button" @click="emit('reset')">Back</button>
-            </div>
+  <section class="game-screen">
+    <div class="game-layout">
+      <div class="top-row">
+        <div class="score-block">
+          <p class="overline">current score</p>
+          <h1>{{ currentScore }}</h1>
+          <p class="description">
+            Select the scored segment and confirm the turn. The leg is handled locally and saved after completion.
+          </p>
         </div>
-    </section>
+
+        <div class="side-panel">
+          <div class="info-item">
+            <span class="info-label">mode</span>
+            <span class="info-value">x01</span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">finish rule</span>
+            <span class="info-value">double out</span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">darts thrown</span>
+            <span class="info-value accent">{{ dartsThrownCounter }}</span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">selected</span>
+            <span class="info-value">
+              {{ selectedModifier ? selectedModifier + ' ' : '' }}{{ selectedScore || '-' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="selection-section">
+        <ScoreSelection
+          :selected-score="selectedScore"
+          :selected-modifier="selectedModifier"
+          @update:selected-score="selectedScore = $event"
+          @update:selected-modifier="selectedModifier = $event"
+        />
+      </div>
+
+      <div v-if="feedback" class="feedback" :class="{ invalid: lastTurnWasInvalid }">
+        {{ feedback }}
+      </div>
+
+      <div class="actions">
+        <button class="secondary-button" @click="emit('reset')">Back</button>
+        <button class="primary-button" :disabled="selectedScore === 0" @click="submitTurn">
+          Confirm turn
+        </button>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import ScoreSelection from './ScoreSelection.vue'
+import type { LocalTurnEntry } from '@/types/trainingSession'
 
 type Modifier = 'DOUBLE' | 'TRIPLE'
 
-const selectedScore = ref(0)
-const selectedModifier = ref<Modifier | undefined>(undefined)
-const dartsTrownCounter = ref(0)
-
 const props = defineProps<{
-    currentScore: number
-    isGameFinished: boolean
-    dartsThrown: number
+  currentScore: number
+  isGameFinished: boolean
+  dartsThrown: number
 }>()
 
 const emit = defineEmits<{
-    (e: 'reset'): void
-    (e: 'update:currentScore', value: number): void
-    (e: 'update:isGameFinished', value: boolean): void
-    (e: 'update:dartsThrown', value: number): void
+  (e: 'reset'): void
+  (e: 'turn-finished', payload: {
+    newCurrentScore: number
+    isGameFinished: boolean
+    dartsThrown: number
+    turnEntry: LocalTurnEntry
+  }): void
 }>()
 
-function onScoreSelected(score: number) {
-    selectedScore.value = score
+const selectedScore = ref(0)
+const selectedModifier = ref<Modifier | undefined>(undefined)
+const dartsThrownCounter = ref(props.dartsThrown)
+const feedback = ref('')
+const lastTurnWasInvalid = ref(false)
 
-    let multiplier = 1
+watch(
+  () => props.dartsThrown,
+  (value) => {
+    dartsThrownCounter.value = value
+  }
+)
 
-    if (selectedModifier.value === 'DOUBLE') multiplier = 2
-    if (selectedModifier.value === 'TRIPLE') multiplier = 3
+function submitTurn() {
+  if (selectedScore.value === 0) return
 
-    const thrownScore = score * multiplier
-    const remainingScore = props.currentScore - thrownScore
-    const isDouble = selectedModifier.value === 'DOUBLE'
+  const previousScore = props.currentScore
+  const multiplier = getMultiplier()
+  const enteredScoredPoints = selectedScore.value * multiplier
+  const correctRemainingScore = previousScore - enteredScoredPoints
+  const isDouble = selectedModifier.value === 'DOUBLE'
+  const isScoreValid = isValidThrow(selectedScore.value, selectedModifier.value)
+  const isBust = isBusted(correctRemainingScore, isDouble)
+  const isCorrect = isScoreValid && !isBust
+  const newCurrentScore = isCorrect ? correctRemainingScore : previousScore
+  const finished = isCorrect && newCurrentScore === 0
 
-    dartsTrownCounter.value++
+  dartsThrownCounter.value++
 
-    if (remainingScore === 0 && isDouble) {
-        emit('update:currentScore', 0)
-        emit('update:isGameFinished', true)
-        emit('update:dartsThrown', dartsTrownCounter.value)
-        resetSelection()
-        return
-    }
+  const turnEntry: LocalTurnEntry = {
+    previousScore,
+    enteredScoredPoints,
+    enteredRemainingScore: newCurrentScore,
+    correctRemainingScore,
+    isScoreValid,
+    isRemainingCorrect: true,
+    isCorrect,
+    createdAt: new Date().toISOString()
+  }
 
-    if (isBusted(remainingScore, isDouble)) {
-        resetSelection()
-        return
-    }
+  if (!isScoreValid) {
+    feedback.value = 'That throw combination is not valid.'
+    lastTurnWasInvalid.value = true
+  } else if (isBust) {
+    feedback.value = 'Bust. The score stays the same.'
+    lastTurnWasInvalid.value = true
+  } else if (finished) {
+    feedback.value = 'Leg completed with a valid double-out.'
+    lastTurnWasInvalid.value = false
+  } else {
+    feedback.value = `New score: ${newCurrentScore}`
+    lastTurnWasInvalid.value = false
+  }
 
-    emit('update:currentScore', remainingScore)
-    resetSelection()
+  emit('turn-finished', {
+    newCurrentScore,
+    isGameFinished: finished,
+    dartsThrown: dartsThrownCounter.value,
+    turnEntry
+  })
+
+  resetSelection()
+}
+
+function getMultiplier() {
+  if (selectedModifier.value === 'DOUBLE') return 2
+  if (selectedModifier.value === 'TRIPLE') return 3
+  return 1
+}
+
+function isValidThrow(score: number, modifier?: Modifier) {
+  if (score < 1 || score > 20) {
+    return score === 25 && modifier !== 'TRIPLE'
+  }
+
+  if (score === 25 && modifier === 'TRIPLE') {
+    return false
+  }
+
+  return true
 }
 
 function isBusted(remainingScore: number, isDouble: boolean): boolean {
-    if (remainingScore < 0) {
-        return true
-    }
-
-    if (remainingScore === 1) {
-        return true
-    }
-
-    if (remainingScore === 0 && !isDouble) {
-        return true
-    }
-
-    return false
+  if (remainingScore < 0) return true
+  if (remainingScore === 1) return true
+  if (remainingScore === 0 && !isDouble) return true
+  return false
 }
 
 function resetSelection() {
-    selectedScore.value = 0
-    selectedModifier.value = undefined
+  selectedScore.value = 0
+  selectedModifier.value = undefined
 }
 </script>
 
 <style scoped>
 .game-screen {
-    width: 100%;
-    padding: 1.5rem 2rem 3rem;
+  width: 100%;
+  padding: 1.5rem 2rem 3rem;
 }
 
 .game-layout {
-    width: 100%;
-    max-width: 1400px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .top-row {
-    display: grid;
-    grid-template-columns: 1.15fr 0.85fr;
-    gap: 1.5rem;
-    align-items: stretch;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 1.5rem;
+  align-items: stretch;
 }
 
 .score-block,
 .side-panel,
-.selection-section {
-    background: #1b1b1b;
-    border: 1px solid #2a2a2a;
-    border-radius: 22px;
+.selection-section,
+.feedback {
+  background: #1b1b1b;
+  border: 1px solid #2a2a2a;
+  border-radius: 22px;
 }
 
 .score-block {
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .overline {
-    margin: 0 0 0.75rem 0;
-    font-size: 0.95rem;
-    color: var(--primary-color);
-    text-transform: lowercase;
-    letter-spacing: 0.04em;
+  margin: 0 0 0.75rem 0;
+  font-size: 0.95rem;
+  color: var(--primary-color);
+  text-transform: lowercase;
+  letter-spacing: 0.04em;
 }
 
 .score-block h1 {
-    margin: 0;
-    font-size: clamp(3rem, 8vw, 6rem);
-    line-height: 0.9;
-    font-weight: 700;
-    color: #f2f2f2;
+  margin: 0;
+  font-size: clamp(3rem, 8vw, 6rem);
+  line-height: 0.9;
+  font-weight: 700;
+  color: #f2f2f2;
 }
 
 .description {
-    margin: 1rem 0 0 0;
-    max-width: 640px;
-    font-size: 1rem;
-    line-height: 1.7;
-    color: #8b8b8b;
+  margin: 1rem 0 0 0;
+  max-width: 640px;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #8b8b8b;
 }
 
 .side-panel {
-    padding: 1.5rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
 }
 
 .info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    padding: 0.2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.2rem 0;
 }
 
 .info-label {
-    font-size: 0.88rem;
-    color: #747474;
-    text-transform: lowercase;
+  font-size: 0.88rem;
+  color: #747474;
+  text-transform: lowercase;
 }
 
 .info-value {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #ededed;
-    text-transform: lowercase;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #ededed;
+  text-transform: lowercase;
 }
 
 .info-value.accent {
-    color: var(--primary-color);
+  color: var(--primary-color);
 }
 
 .selection-section {
-    padding: 1.5rem;
+  padding: 1.5rem;
+}
+
+.feedback {
+  padding: 1rem 1.25rem;
+  color: #dcdcdc;
+}
+
+.feedback.invalid {
+  color: #ffb8b8;
+  border-color: rgba(220, 70, 70, 0.4);
 }
 
 .actions {
-    display: flex;
-    justify-content: flex-end;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.9rem;
+}
+
+.primary-button,
+.secondary-button {
+  height: 50px;
+  padding: 0 1.2rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.primary-button {
+  border: none;
+  background: var(--primary-color);
+  color: #161616;
+}
+
+.primary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .secondary-button {
-    height: 50px;
-    padding: 0 1.2rem;
-    border-radius: 12px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1px solid #3a3a3a;
-    background: transparent;
-    color: #d6d6d6;
-    transition:
-        background 0.15s ease,
-        border-color 0.15s ease,
-        color 0.15s ease,
-        transform 0.15s ease;
+  border: 1px solid #3a3a3a;
+  background: transparent;
+  color: #d6d6d6;
 }
 
 .secondary-button:hover {
-    background: #222;
+  background: #222;
 }
 
+.primary-button:active,
 .secondary-button:active {
-    transform: translateY(1px);
+  transform: translateY(1px);
 }
 
 @media (max-width: 950px) {
-    .top-row {
-        grid-template-columns: 1fr;
-    }
-
-    .side-panel {
-        grid-template-columns: 1fr 1fr;
-    }
-}
-
-@media (max-width: 640px) {
-    .game-screen {
-        padding: 1rem 1rem 2rem;
-    }
-
-    .score-block,
-    .side-panel,
-    .selection-section {
-        padding: 1.25rem;
-    }
-
-    .side-panel {
-        grid-template-columns: 1fr;
-    }
-
-    .actions {
-        justify-content: stretch;
-    }
-
-    .secondary-button {
-        width: 100%;
-    }
+  .top-row {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

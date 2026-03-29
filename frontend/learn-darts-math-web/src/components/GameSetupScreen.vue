@@ -1,58 +1,64 @@
 <template>
-    <section class="setup-screen">
-        <div class="setup-layout">
-            <div class="intro">
-                <p class="overline">training setup</p>
-                <h1>configure your next session</h1>
-                <p class="description">
-                    Choose the starting score for the training leg and begin a new session.
-                    The current setup supports standard x01 practice with a focused scoring flow.
-                </p>
-            </div>
+  <section class="setup-screen">
+    <div class="setup-layout">
+      <div class="intro">
+        <p class="overline">training setup</p>
+        <h1>configure your next session</h1>
+        <p class="description">
+          Choose the starting score for the training leg and begin a new session.
+          The current setup supports standard x01 practice with a focused scoring flow.
+        </p>
+      </div>
 
-            <div class="setup-panel">
-                <div class="field-group">
-                    <label for="start-score" class="field-label">start score</label>
-                    <select id="start-score" v-model.number="localStartScore" class="selection">
-                        <option :value="501">501</option>
-                        <option :value="301">301</option>
-                    </select>
-                </div>
-
-                <div class="info-row">
-                    <div class="info-item">
-                        <span class="info-label">mode</span>
-                        <span class="info-value">x01</span>
-                    </div>
-
-                    <div class="info-item">
-                        <span class="info-label">finish rule</span>
-                        <span class="info-value">double out</span>
-                    </div>
-                </div>
-
-                <button class="start-button" @click="$emit('start', localStartScore)">
-                    Start training
-                </button>
-            </div>
+      <div class="setup-panel">
+        <div class="field-group">
+          <label for="start-score" class="field-label">start score</label>
+          <select id="start-score" v-model.number="localStartScore" class="selection">
+            <option :value="501">501</option>
+            <option :value="301">301</option>
+          </select>
         </div>
-    </section>
+
+        <div class="info-row">
+          <div class="info-item">
+            <span class="info-label">mode</span>
+            <span class="info-value">x01</span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">finish rule</span>
+            <span class="info-value">double out</span>
+          </div>
+        </div>
+
+        <button class="start-button" @click="emit('start', localStartScore)">
+          Start training
+        </button>
+      </div>
+    </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
-const localStartScore = ref(501)
-
-defineProps<{
-    startScore: number
+const props = defineProps<{
+  startScore: number
 }>()
 
-defineEmits<{
-    (e: 'start', value: number): void
+const emit = defineEmits<{
+  (e: 'start', value: number): void
 }>()
+
+const localStartScore = ref(props.startScore)
+
+watch(
+  () => props.startScore,
+  (value) => {
+    localStartScore.value = value
+  }
+)
 </script>
-
 <style scoped>
 .setup-screen {
     width: 100%;
